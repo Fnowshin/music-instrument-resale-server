@@ -19,11 +19,19 @@ async function run(){
 
     try{
         const categoriesCollecton = client.db('musicInstrumentResale').collection('categories');
+        const productsCollecton = client.db('musicInstrumentResale').collection('products');
 
         app.get('/categories', async(req, res) => {
             const query = {};
             const category = await categoriesCollecton.find(query).toArray();
             res.send(category);
+        })
+
+        app.get('/products/:id', async (req, res) => {
+            const id = req.params.id;
+            const query = { category_id: (id) };
+            const product = await productsCollecton.find(query).toArray();
+            res.send(product);
         })
 
     }
