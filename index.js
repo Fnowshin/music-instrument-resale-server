@@ -20,6 +20,7 @@ async function run(){
     try{
         const categoriesCollecton = client.db('musicInstrumentResale').collection('categories');
         const productsCollecton = client.db('musicInstrumentResale').collection('products');
+        const bookingCollection = client.db('musicInstrumentResale').collection('bookings');
 
         app.get('/categories', async(req, res) => {
             const query = {};
@@ -34,6 +35,12 @@ async function run(){
             res.send(product);
         })
 
+        app.patch('/bookings/:id', async(req, res) => {
+            const booking = req.body
+            console.log(booking);
+            const result = await bookingCollection.insertOne(booking);
+            res.send(result);
+        })
     }
     finally{
 
