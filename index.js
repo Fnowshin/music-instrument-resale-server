@@ -1,6 +1,7 @@
 const express = require('express');
 const cors = require('cors');
-const { MongoClient, ServerApiVersion } = require('mongodb');
+const { MongoClient, ServerApiVersion, ObjectId } = require('mongodb');
+const jwt = require('jsonwebtoken');
 require('dotenv').config();
 const port = process.env.PORT || 5000;
 
@@ -14,6 +15,8 @@ app.use(express.json());
 const uri = `mongodb+srv://${process.env.DB_USER}:${process.env.DB_PASS}@cluster0.lt8wotk.mongodb.net/?retryWrites=true&w=majority`;
 
 const client = new MongoClient(uri, { useNewUrlParser: true, useUnifiedTopology: true, serverApi: ServerApiVersion.v1 });
+
+
 
 async function run(){
 
@@ -52,6 +55,25 @@ async function run(){
             res.send(buyers)
         })
 
+        app.get('/buyers/admin/:email', async (req, res ) =>{
+            const email = req.params.email;
+            const query = { email }
+            const buyer = await buyersCollection.findOne(query);
+            res.send({ isAdmin: buyer?.role === 'admin'});
+        })
+
+        app.get ('/jwt', async(req, res) => {
+            const email = req.query.email;
+            const query = {email: email};
+            const buyer = await buyersCollection.findOne(query);
+            if(buyer){
+                const token = jwt.sign({email},process.env.ACCESS_TOKEN, {expiresIn: '30d'});
+                return res.send({accessToken: token});
+            }
+            console.log(buyer);
+            res.status(403).send({accessToken: ''});
+        })
+
         app.patch('/bookings/:id', async(req, res) => {
             const booking = req.body
             console.log(booking);
@@ -63,6 +85,19 @@ async function run(){
             const buyer = req.body;
             console.log(buyer);
             const result = await buyersCollection.insertOne(buyer);
+            res.send(result);
+        })
+
+        app.put('/buyers/admin/:id', async (req, res) => {
+            const id = req.params.id;
+            const filter = {_id: ObjectId(id) }
+            const options = { upsert: true};
+            const updatedDoc = {
+                $set: {
+                    role: 'admin'
+                }
+            }
+            const result = await buyersCollection.updateOne(filter,updatedDoc, options);
             res.send(result);
         })
 
