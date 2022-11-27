@@ -19,8 +19,12 @@ async function run(){
 
     try{
         const categoriesCollecton = client.db('musicInstrumentResale').collection('categories');
+
         const productsCollecton = client.db('musicInstrumentResale').collection('products');
+
         const bookingCollection = client.db('musicInstrumentResale').collection('bookings');
+
+        const buyersCollection = client.db('musicInstrumentResale').collection('buyers');
 
         app.get('/categories', async(req, res) => {
             const query = {};
@@ -35,12 +39,33 @@ async function run(){
             res.send(product);
         })
 
+        app.get('/bookings', async(req, res) => {
+            const email = req.query.email;
+            const query = {email: email};
+            const bookings = await bookingCollection.find(query).toArray();
+            res.send(bookings);
+        })
+
+        app.get('/buyers', async(req, res) => {
+            const query = {};
+            const buyers = await buyersCollection.find(query).toArray();
+            res.send(buyers)
+        })
+
         app.patch('/bookings/:id', async(req, res) => {
             const booking = req.body
             console.log(booking);
             const result = await bookingCollection.insertOne(booking);
             res.send(result);
         })
+
+        app.post('/buyers', async(req, res) =>{
+            const buyer = req.body;
+            console.log(buyer);
+            const result = await buyersCollection.insertOne(buyer);
+            res.send(result);
+        })
+
     }
     finally{
 
